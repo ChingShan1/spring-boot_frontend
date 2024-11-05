@@ -1,0 +1,196 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  </head>
+
+  <body>
+
+    <h3>1. 註冊帳號</h3>
+    <form id="test1" action="#" spellcheck="false">
+      <div>
+        <label style="vertical-align: top;">code 的值：</label>
+        <textarea id="code" name="code" rows="3" cols="60" type="text"></textarea>
+      </div>
+      <div>
+        <button type="submit">提交</button>
+      </div>
+    </form>
+    <div>
+      <p>返回結果：</p>
+      <p id="test1-outputStatus"></p>
+      <p id="test1-output" class="output-json">.</p>
+    </div>
+    <br/><br/>
+
+    <h3>2. 登入帳號</h3>
+    <p>登入帳號 <a href="http://localhost:8080/login">連結</a></p>
+    <br/><br/>
+   
+
+    <h3>3. 得到產品資訊</h3>
+    <form id="test3" action="#" spellcheck="false">
+      <div>
+        <label style="vertical-align: top;">code 的值：</label>
+        <textarea id="code" name="code" rows="3" cols="60" type="text"></textarea>
+      </div>
+      <div>
+        <button type="submit">提交</button>
+      </div>
+    </form>
+    <div>
+      <p>返回結果：</p>
+      <p id="test3-outputStatus"></p>
+      <p id="test3-output" class="output-json">.</p>
+    </div>
+    <br/><br/>
+
+    <div class="g-signin2" data-onsuccess="onSignIn"></div>
+    
+  </body>
+  
+  <script src="https://apis.google.com/js/platform.js" async defer>
+    function onSignIn(googleUser) {
+    var id_token = googleUser.getAuthResponse().id_token;
+    console.log("ID Token: " + id_token);
+
+    // 将 ID token 发送到后端进行验证
+    fetch('http://localhost:8080/api/auth/google', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token: id_token })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('User authenticated:', data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+  </script>
+  <script>
+    document.getElementById("test1").addEventListener("submit", (event) => {
+      event.preventDefault();
+    
+      // 指定 http method、url
+      const http = new XMLHttpRequest();
+      const method = "POST";
+      const url = "http://localhost:8080/register";
+      http.open(method, url);
+
+
+      var data = document.getElementById("code").value
+
+      // 發出 http request 請求
+      http.setRequestHeader("Content-Type", "application/json");
+      http.send(data);
+      http.onreadystatechange = (e) => {
+        var outputStatus = document.getElementById("test1-outputStatus");
+        var output = document.getElementById("test1-output");
+        showOutput(http, outputStatus, output);
+      }
+    });
+
+    document.getElementById("test3").addEventListener("submit", (event) => {
+      event.preventDefault();
+    
+      // 指定 http method、url
+      const http = new XMLHttpRequest();
+      const method = "GET";
+      const url = "http://localhost:8080/products?limit=3";
+      http.open(method, url);
+
+
+      var data = document.getElementById("code").value
+
+      // 發出 http request 請求
+      http.setRequestHeader("Content-Type", "application/json");
+      http.send(data);
+      http.onreadystatechange = (e) => {
+        var outputStatus = document.getElementById("test3-outputStatus");
+        var output = document.getElementById("test3-output");
+        showOutput(http, outputStatus, output);
+      }
+    });
+    
+
+
+
+
+    function showOutput(http, outputStatus, output) {
+      outputStatus.style.backgroundColor = "#D0D0D0";
+      outputStatus.innerHTML = http.status;
+      
+      output.style.backgroundColor = "#D0D0D0";
+      try {
+        output.innerHTML = JSON.stringify(JSON.parse(http.responseText), null, 4); 
+      } catch (e) {
+        output.innerHTML = http.responseText;
+      }
+    }
+
+  </script>
+
+  <style>
+    .title a {
+      font-size: 18px;
+      text-decoration: none;
+    }
+
+    .title span {
+      background-color: #EA4335;
+      color: #FFFFFF;
+      border-radius: 5px;
+      padding: 1px 8px 1px 8px;
+    }
+
+    .connect-button {
+      background-color: #EA4335;
+      color: #FFFFFF;
+      width: fit-content;
+      border-radius: 5px;
+      padding: 3px 8px 3px 8px;
+      margin: 0 0 20px 0;
+    }
+
+    .api-form {
+      display: inline-block;
+      padding: 0 20px 0 20px;
+      margin: 0 0 20px 0;
+      border: 1px solid #000000;
+
+      button {
+        display: block;
+        margin-block-start: 1em;
+        margin-block-end: 1em;
+      }
+    }
+
+    .output-json {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    a.show-url {
+      &::after {
+        content: attr(href);
+      }
+    }
+
+    ul {
+      padding-inline-start: 20px;
+    }
+
+    li {
+        padding: 5px 0 5px 0;
+    }
+
+    body {
+      margin: 0 20px 50px 20px;
+    }
+  </style>
+
+</html>
